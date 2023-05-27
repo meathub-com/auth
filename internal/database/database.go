@@ -35,17 +35,37 @@ func (d *Database) GetUserByEmail(ctx context.Context, email string) (user.User,
 	}
 	return user, nil
 }
+func (d *Database) GetUserAndSaltByEmail(ctx context.Context, email string) (user.User, string, error) {
+	var userRow UserRow
+	query := "SELECT id, email,password,salt FROM users WHERE email = $1"
+	err := d.Client.GetContext(ctx, &userRow, query, email)
+	user := convertUserRowToUser(userRow)
+	if err != nil {
+		return user, "", err
+	}
+	return user, userRow.Salt, nil
+}
 
 func (d *Database) PostUser(ctx context.Context, user user.User) (user.User, error) {
 	var userRow UserRow
-	query := "INSERT INTO users (email, password) VALUES ( $1, $2) RETURNING id, email, password"
-	err := d.Client.GetContext(ctx, &userRow, query, user.Email, user.Password)
+	salt, err := generateRandomSalt(saltLength)
+	if err != nil {
+		return user, err
+	}
+	saltedPassword := user.Password + salt
+	encryptedPassword, err := encryptPassword(saltedPassword)
+	if err != nil {
+		return user, err
+	}
+
+	query := "INSERT INTO users (email, password, salt) VALUES ($1, $2, $3) RETURNING id, email, password"
+	err = d.Client.GetContext(ctx, &userRow, query, user.Email, encryptedPassword, salt)
+
 	user = convertUserRowToUser(userRow)
 	if err != nil {
 		return user, err
 	}
 	return user, nil
-
 }
 
 func (d *Database) UpdateUser(ctx context.Context, user user.User) (user.User, error) {

@@ -12,11 +12,13 @@ import (
 type UserService interface {
 	GetUser(ctx context.Context, id string) (user.User, error)
 	GetUserByEmail(ctx context.Context, email string) (user.User, error)
+	Login(ctx context.Context, email string, password string) (user.User, error)
 	PostUser(ctx context.Context, user user.User) (user.User, error)
 	UpdateUser(ctx context.Context, user user.User) (user.User, error)
 	DeleteUser(ctx context.Context, id string) error
 	ReadyCheck(ctx context.Context) error
 	GenerateToken(user user.User) (string, error)
+	GenerateRefreshToken(user user.User) (string, error)
 }
 
 func (h *Handler) GetUser(w http.ResponseWriter, r *http.Request) {
@@ -54,7 +56,7 @@ func (h *Handler) LoginUser(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
-	user, err := h.Service.GetUserByEmail(r.Context(), user.Email)
+	user, err := h.Service.Login(r.Context(), user.Email, user.Password)
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		return
@@ -64,10 +66,16 @@ func (h *Handler) LoginUser(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
+	refreshToken, err := h.Service.GenerateToken(user)
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
 	w.WriteHeader(http.StatusOK)
-	if err := json.NewEncoder(w).Encode(LoginResponse{User: user, Token: token}); err != nil {
+	if err := json.NewEncoder(w).Encode(map[string]string{"token": token, "refreshToken": refreshToken}); err != nil {
 		panic(err)
 	}
+
 }
 
 func (h *Handler) UpdateUser(w http.ResponseWriter, r *http.Request) {

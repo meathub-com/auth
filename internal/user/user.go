@@ -2,6 +2,8 @@ package user
 
 import (
 	"context"
+	"fmt"
+	"golang.org/x/crypto/bcrypt"
 )
 
 type User struct {
@@ -11,6 +13,7 @@ type User struct {
 }
 
 type UserStore interface {
+	GetUserAndSaltByEmail(context.Context, string) (User, string, error)
 	GetUser(context.Context, string) (User, error)
 	GetUserByEmail(context.Context, string) (User, error)
 	PostUser(context.Context, User) (User, error)
@@ -30,6 +33,7 @@ func NewService(store UserStore) *Service {
 func (s *Service) GetUser(ctx context.Context, id string) (User, error) {
 	return s.Store.GetUser(ctx, id)
 }
+
 func (s *Service) GetUserByEmail(ctx context.Context, email string) (User, error) {
 	return s.Store.GetUserByEmail(ctx, email)
 }
@@ -47,4 +51,24 @@ func (s *Service) DeleteUser(ctx context.Context, id string) error {
 
 func (s *Service) ReadyCheck(ctx context.Context) error {
 	return s.Store.Ping(ctx)
+}
+func (s *Service) Login(ctx context.Context, email string, password string) (User, error) {
+	user, salt, err := s.Store.GetUserAndSaltByEmail(ctx, email)
+	if err != nil {
+		return User{}, err
+	}
+	if !validatePassword(password, salt, user.Password) {
+		return User{}, fmt.Errorf("invalid password")
+	}
+	return user, nil
+}
+func validatePassword(cleanPassword, salt, encryptedPassword string) bool {
+	saltedPassword := cleanPassword + salt
+
+	err := bcrypt.CompareHashAndPassword([]byte(encryptedPassword), []byte(saltedPassword))
+	if err != nil {
+		return false
+	}
+
+	return true
 }
