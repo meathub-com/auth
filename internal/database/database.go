@@ -7,6 +7,7 @@ import (
 	_ "github.com/lib/pq"
 	log "github.com/sirupsen/logrus"
 	"os"
+	"time"
 	"users/internal/user"
 )
 
@@ -93,7 +94,9 @@ func (d *Database) Ping(ctx context.Context) error {
 	panic("implement me")
 }
 
-// NewDatabase - returns a pointer to a database object
+const maxRetries = 5
+const retryInterval = time.Second * 5
+
 func NewDatabase() (*Database, error) {
 	log.Info("Setting up new database connection")
 
@@ -107,12 +110,25 @@ func NewDatabase() (*Database, error) {
 		os.Getenv("SSL_MODE"),
 	)
 
-	db, err := sqlx.Connect("postgres", connectionString)
-	if err != nil {
-		return &Database{}, fmt.Errorf("could not connect to database: %w", err)
+	var db *sqlx.DB
+	var err error
+
+	for i := 0; i < maxRetries; i++ {
+		db, err = sqlx.Connect("postgres", connectionString)
+		if err == nil {
+			log.Info("Connected to database")
+			return &Database{
+				Client: db,
+			}, nil
+		}
+
+		log.Errorf("Could not connect to database: %v", err)
+
+		if i < maxRetries-1 {
+			log.Infof("Retrying database connection in %s...", retryInterval)
+			time.Sleep(retryInterval)
+		}
 	}
-	log.Info("connected to database")
-	return &Database{
-		Client: db,
-	}, nil
+
+	return &Database{}, fmt.Errorf("failed to connect to database after %d retries", maxRetries)
 }
