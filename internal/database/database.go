@@ -25,6 +25,17 @@ func (d *Database) GetUser(ctx context.Context, s string) (user.User, error) {
 	return user, nil
 }
 
+func (d *Database) GetUserByEmail(ctx context.Context, email string) (user.User, error) {
+	var userRow UserRow
+	query := "SELECT id, email,password FROM users WHERE email = $1"
+	err := d.Client.GetContext(ctx, &userRow, query, email)
+	user := convertUserRowToUser(userRow)
+	if err != nil {
+		return user, err
+	}
+	return user, nil
+}
+
 func (d *Database) PostUser(ctx context.Context, user user.User) (user.User, error) {
 	var userRow UserRow
 	query := "INSERT INTO users (email, password) VALUES ( $1, $2) RETURNING id, email, password"

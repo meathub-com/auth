@@ -12,6 +12,7 @@ type User struct {
 
 type UserStore interface {
 	GetUser(context.Context, string) (User, error)
+	GetUserByEmail(context.Context, string) (User, error)
 	PostUser(context.Context, User) (User, error)
 	UpdateUser(context.Context, User) (User, error)
 	DeleteUser(context.Context, string) error
@@ -21,10 +22,17 @@ type Service struct {
 	Store UserStore
 }
 
+func NewService(store UserStore) *Service {
+	return &Service{
+		Store: store,
+	}
+}
 func (s *Service) GetUser(ctx context.Context, id string) (User, error) {
 	return s.Store.GetUser(ctx, id)
 }
-
+func (s *Service) GetUserByEmail(ctx context.Context, email string) (User, error) {
+	return s.Store.GetUserByEmail(ctx, email)
+}
 func (s *Service) PostUser(ctx context.Context, user User) (User, error) {
 	return s.Store.PostUser(ctx, user)
 }
@@ -39,10 +47,4 @@ func (s *Service) DeleteUser(ctx context.Context, id string) error {
 
 func (s *Service) ReadyCheck(ctx context.Context) error {
 	return s.Store.Ping(ctx)
-}
-
-func NewService(store UserStore) *Service {
-	return &Service{
-		Store: store,
-	}
 }
