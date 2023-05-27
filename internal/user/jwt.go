@@ -13,7 +13,7 @@ func (s *Service) GenerateToken(user User) (string, error) {
 	claims["email"] = user.Email
 	claims["exp"] = time.Now().Add(time.Hour * 24).Unix()
 
-	tokenString, err := token.SignedString([]byte("your-secret-key"))
+	tokenString, err := token.SignedString([]byte("missionimpossible"))
 	if err != nil {
 		return "", err
 	}
