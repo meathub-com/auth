@@ -1,10 +1,21 @@
+// @title Swagger Example API
+// @version 1.0
+// @description This is a sample server Auth server.
+// @termsOfService http://swagger.io/terms/
+// @contact.name API Support
+// @contact.url http://www.swagger.io/support
+// @contact.email support@swagger.io
+// @license.name Apache 2.0
+// @license.url http://www.apache.org/licenses/LICENSE-2.0.html
+// @BasePath /
+
 package main
 
 import (
+	"auth/internal/database"
+	"auth/internal/transport"
+	"auth/internal/user"
 	log "github.com/sirupsen/logrus"
-	"users/internal/database"
-	"users/internal/transport"
-	"users/internal/user"
 )
 
 func Run() error {

@@ -1,9 +1,11 @@
 package transport
 
 import (
+	_ "auth/docs"
 	"context"
 	"encoding/json"
 	"github.com/go-chi/chi/v5"
+	httpSwagger "github.com/swaggo/http-swagger"
 	"log"
 	"net/http"
 	"os"
@@ -41,10 +43,13 @@ func NewHandler(service UserService) *Handler {
 
 func (h *Handler) mapRoutes() {
 	h.Router.Get("/auth/{id}", h.GetUser)
-	h.Router.Post("/auth/register", h.PostUser)
+	h.Router.Post("/auth/register", h.RegisterUser)
 	h.Router.Put("/auth/{id}", h.UpdateUser)
 	h.Router.Delete("/auth/{id}", h.DeleteUser)
 	h.Router.Post("/auth/login", h.LoginUser)
+	h.Router.Get("/swagger/*", httpSwagger.Handler(
+		httpSwagger.URL("http://localhost:8080/swagger/doc.json"),
+	))
 }
 
 func (h *Handler) AliveCheck(w http.ResponseWriter, r *http.Request) {

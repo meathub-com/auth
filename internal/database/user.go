@@ -1,10 +1,10 @@
 package database
 
 import (
+	"auth/internal/user"
 	"crypto/rand"
 	"encoding/base64"
 	"golang.org/x/crypto/bcrypt"
-	"users/internal/user"
 )
 
 type UserRow struct {

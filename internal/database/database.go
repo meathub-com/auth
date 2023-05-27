@@ -1,6 +1,7 @@
 package database
 
 import (
+	"auth/internal/user"
 	"context"
 	"fmt"
 	"github.com/jmoiron/sqlx"
@@ -8,7 +9,6 @@ import (
 	log "github.com/sirupsen/logrus"
 	"os"
 	"time"
-	"users/internal/user"
 )
 
 type Database struct {

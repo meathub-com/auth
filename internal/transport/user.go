@@ -1,12 +1,35 @@
+// Package transport Package classification awesome.
+//
+// Documentation of our awesome API.
+//
+//	 Schemes: http
+//	 BasePath: /
+//	 Version: 1.0.0
+//	 Host: some-url.com
+//
+//	 Consumes:
+//	 - application/json
+//
+//	 Produces:
+//	 - application/json
+//
+//	 Security:
+//	 - basic
+//
+//	SecurityDefinitions:
+//	basic:
+//	  type: basic
+//
+// swagger:meta
 package transport
 
 import (
+	"auth/internal/user"
 	"context"
 	"encoding/json"
-	"github.com/go-chi/chi/v5"
+	chi "github.com/go-chi/chi/v5"
 	log "github.com/sirupsen/logrus"
 	"net/http"
-	"users/internal/user"
 )
 
 type UserService interface {
@@ -21,6 +44,11 @@ type UserService interface {
 	GenerateRefreshToken(user user.User) (string, error)
 }
 
+// GetUser @Summary Get a user
+// @Description get string by ID
+// @ID get-string-by-int
+// @Accept  json
+// @Produce  json
 func (h *Handler) GetUser(w http.ResponseWriter, r *http.Request) {
 	user, err := h.Service.GetUser(r.Context(), chi.URLParam(r, "id"))
 	if err != nil {
@@ -34,22 +62,56 @@ func (h *Handler) GetUser(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func (h *Handler) PostUser(w http.ResponseWriter, r *http.Request) {
-	var user user.User
-	if err := json.NewDecoder(r.Body).Decode(&user); err != nil {
+// RegisterUser godoc
+// @Summary Register a new user
+// @Description Register a new user by username and password
+// @Tags users
+// @Accept  json
+// @Produce  json
+// @Param user body RegisterRequest true "User info"
+// @Success 200 {object} LoginResponse
+// @Router /auth/register [post]
+func (h *Handler) RegisterUser(w http.ResponseWriter, r *http.Request) {
+	var rr RegisterRequest
+	if err := json.NewDecoder(r.Body).Decode(&r); err != nil {
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
-	user, err := h.Service.PostUser(r.Context(), user)
+	user, err := h.Service.PostUser(r.Context(), convertRegisterRequestToUser(rr))
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
-	w.WriteHeader(http.StatusCreated)
-	if err := json.NewEncoder(w).Encode(user); err != nil {
-		panic(err)
+	accessToken, err := h.Service.GenerateToken(user)
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		return
 	}
+	refreshToken, err := h.Service.GenerateRefreshToken(user)
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+	w.WriteHeader(http.StatusOK)
+	if err := json.NewEncoder(w).Encode(LoginResponse{
+		AccessToken:  accessToken,
+		RefreshToken: refreshToken,
+		User:         user,
+	}); err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+	}
+
 }
+
+// LoginUser godoc
+// @Summary Log in a user
+// @Description Log in a user by username and password
+// @Tags users
+// @Accept  json
+// @Produce  json
+// @Param user body user.User true "Login user"
+// @Success 200 {object} LoginResponse
+// @Router /auth/login [post]
 func (h *Handler) LoginUser(w http.ResponseWriter, r *http.Request) {
 	var user user.User
 	if err := json.NewDecoder(r.Body).Decode(&user); err != nil {
@@ -102,9 +164,4 @@ func (h *Handler) DeleteUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	w.WriteHeader(http.StatusOK)
-}
-
-type LoginResponse struct {
-	User  user.User `json:"user"`
-	Token string    `json:"token"`
 }

@@ -6,6 +6,10 @@ import (
 	"golang.org/x/crypto/bcrypt"
 )
 
+// User godoc
+// @Description User's login details
+// @Param   username     string     "Username to use for login"
+// @Param   password     string     "User's password"
 type User struct {
 	ID       string
 	Email    string
