@@ -16,7 +16,7 @@ type Database struct {
 
 func (d *Database) GetUser(ctx context.Context, s string) (user.User, error) {
 	var userRow UserRow
-	query := "SELECT id, email,password FROM auth WHERE id = $1"
+	query := "SELECT id, email,password FROM users WHERE id = $1"
 	err := d.Client.GetContext(ctx, &userRow, query, s)
 	user := convertUserRowToUser(userRow)
 	if err != nil {
@@ -27,8 +27,8 @@ func (d *Database) GetUser(ctx context.Context, s string) (user.User, error) {
 
 func (d *Database) PostUser(ctx context.Context, user user.User) (user.User, error) {
 	var userRow UserRow
-	query := "INSERT INTO auth (id, email, password) VALUES ($1, $2, $3) RETURNING id, email, password"
-	err := d.Client.GetContext(ctx, &userRow, query, user.ID, user.Email, user.Password)
+	query := "INSERT INTO users (email, password) VALUES ( $1, $2) RETURNING id, email, password"
+	err := d.Client.GetContext(ctx, &userRow, query, user.Email, user.Password)
 	user = convertUserRowToUser(userRow)
 	if err != nil {
 		return user, err
@@ -39,7 +39,7 @@ func (d *Database) PostUser(ctx context.Context, user user.User) (user.User, err
 
 func (d *Database) UpdateUser(ctx context.Context, user user.User) (user.User, error) {
 	var userRow UserRow
-	query := "UPDATE auth SET email = $1, password = $2 WHERE id = $3 RETURNING id, email, password"
+	query := "UPDATE users SET email = $1, password = $2 WHERE id = $3 RETURNING id, email, password"
 	err := d.Client.GetContext(ctx, &userRow, query, user.Email, user.Password, user.ID)
 	user = convertUserRowToUser(userRow)
 	if err != nil {
@@ -49,7 +49,7 @@ func (d *Database) UpdateUser(ctx context.Context, user user.User) (user.User, e
 }
 
 func (d *Database) DeleteUser(ctx context.Context, s string) error {
-	query := "DELETE FROM auth WHERE id = $1"
+	query := "DELETE FROM users WHERE id = $1"
 	_, err := d.Client.ExecContext(ctx, query, s)
 	if err != nil {
 		return err
