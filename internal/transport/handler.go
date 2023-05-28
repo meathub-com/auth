@@ -5,6 +5,7 @@ import (
 	"context"
 	"encoding/json"
 	"github.com/go-chi/chi/v5"
+	"github.com/go-chi/cors"
 	httpSwagger "github.com/swaggo/http-swagger"
 	"log"
 	"net/http"
@@ -28,16 +29,25 @@ func NewHandler(service UserService) *Handler {
 		Service: service,
 		Router:  chi.NewRouter(),
 	}
+
+	// Configure CORS
+	cors := cors.New(cors.Options{
+		AllowedOrigins:   []string{"*"}, // Change "*" to the appropriate origin URL(s)
+		AllowedMethods:   []string{"GET", "POST", "PUT", "DELETE"},
+		AllowedHeaders:   []string{"Accept", "Authorization", "Content-Type"},
+		AllowCredentials: true,
+	})
+	h.Router.Use(cors.Handler)
+
 	h.mapRoutes()
+
 	h.Server = &http.Server{
-		Addr: "0.0.0.0:8080",
-		// Good practice to set timeouts to avoid Slowloris attacks.
+		Addr:         "0.0.0.0:8080",
 		WriteTimeout: time.Second * 15,
 		ReadTimeout:  time.Second * 15,
 		IdleTimeout:  time.Second * 60,
 		Handler:      h.Router,
 	}
-	// return our wonderful handler
 	return h
 }
 

@@ -22,3 +22,9 @@ func convertRegisterRequestToUser(r RegisterRequest) user.User {
 		Password: r.Password,
 	}
 }
+func convertLoginRequestToUser(r LoginRequest) user.User {
+	return user.User{
+		Email:    r.Email,
+		Password: r.Password,
+	}
+}

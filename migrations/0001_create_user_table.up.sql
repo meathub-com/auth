@@ -6,3 +6,8 @@ CREATE TABLE IF NOT EXISTS users
     salt     VARCHAR(100) NOT NULL
 
 );
+
+INSERT INTO users (email, password, salt)
+VALUES ('user1@example.com', 'password1', 'salt1'),
+       ('user2@example.com', 'password2', 'salt2'),
+       ('admin@example.com', 'adminpassword', 'adminsalt');

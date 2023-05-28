@@ -26,6 +26,10 @@ func (d *Database) MigrateDB() error {
 	}
 
 	m.Force(1)
+	err = m.Down()
+	if err != nil && err != migrate.ErrNoChange {
+		return err
+	}
 	err = m.Up()
 	if err != nil && err != migrate.ErrNoChange {
 		return fmt.Errorf("could not migrate the database: %w", err)

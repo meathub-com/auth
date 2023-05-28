@@ -50,7 +50,7 @@ func (h *Handler) GetUser(w http.ResponseWriter, r *http.Request) {
 // @Router /auth/register [post]
 func (h *Handler) RegisterUser(w http.ResponseWriter, r *http.Request) {
 	var rr RegisterRequest
-	if err := json.NewDecoder(r.Body).Decode(&r); err != nil {
+	if err := json.NewDecoder(r.Body).Decode(&rr); err != nil {
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
@@ -90,23 +90,28 @@ func (h *Handler) RegisterUser(w http.ResponseWriter, r *http.Request) {
 // @Success 200 {object} LoginResponse
 // @Router /auth/login [post]
 func (h *Handler) LoginUser(w http.ResponseWriter, r *http.Request) {
-	var user user.User
-	if err := json.NewDecoder(r.Body).Decode(&user); err != nil {
+	var lr LoginRequest
+	if err := json.NewDecoder(r.Body).Decode(&lr); err != nil {
+		log.WithError(err).Error("error decoding user")
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
+	user := convertLoginRequestToUser(lr)
 	user, err := h.Service.Login(r.Context(), user.Email, user.Password)
 	if err != nil {
+		log.WithError(err).Error("error logging in user")
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
 	token, err := h.Service.GenerateToken(user)
 	if err != nil {
+		log.WithError(err).Error("error generating token")
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
 	refreshToken, err := h.Service.GenerateToken(user)
 	if err != nil {
+		log.WithError(err).Error("error generating refresh token")
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
