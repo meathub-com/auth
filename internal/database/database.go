@@ -102,14 +102,15 @@ func NewDatabase() (*Database, error) {
 
 	connectionString := fmt.Sprintf(
 		"host=%s port=%s user=%s dbname=%s password=%s sslmode=%s",
-		os.Getenv("DB_HOST"),
-		os.Getenv("DB_PORT"),
-		os.Getenv("DB_USERNAME"),
-		os.Getenv("DB_TABLE"),
-		os.Getenv("DB_PASSWORD"),
-		os.Getenv("SSL_MODE"),
+		getOrDefault("DB_HOST", "localhost"),
+		getOrDefault("DB_PORT", "5432"),
+		getOrDefault("DB_USERNAME", "postgres"),
+		getOrDefault("DB_TABLE", "postgres"),
+		getOrDefault("DB_PASSWORD", "postgres"),
+		getOrDefault("SSL_MODE", "disable"),
 	)
 
+	fmt.Println(connectionString)
 	var db *sqlx.DB
 	var err error
 
@@ -131,4 +132,11 @@ func NewDatabase() (*Database, error) {
 	}
 
 	return &Database{}, fmt.Errorf("failed to connect to database after %d retries", maxRetries)
+}
+func getOrDefault(key, defaultValue string) string {
+	value := os.Getenv(key)
+	if value == "" {
+		return defaultValue
+	}
+	return value
 }

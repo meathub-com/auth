@@ -1,13 +1,12 @@
 package transport
 
 import (
-	_ "auth/docs"
 	"context"
 	"encoding/json"
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/cors"
+	log "github.com/sirupsen/logrus"
 	httpSwagger "github.com/swaggo/http-swagger"
-	"log"
 	"net/http"
 	"os"
 	"os/signal"
@@ -66,7 +65,7 @@ func (h *Handler) AliveCheck(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 	w.WriteHeader(http.StatusOK)
 	if err := json.NewEncoder(w).Encode(Response{Message: "I am Alive!"}); err != nil {
-		panic(err)
+		log.Errorf("Error getting profile: %v", err)
 	}
 }
 
@@ -78,7 +77,7 @@ func (h *Handler) ReadyCheck(w http.ResponseWriter, r *http.Request) {
 
 	w.WriteHeader(http.StatusOK)
 	if err := json.NewEncoder(w).Encode(Response{Message: "I am Ready!"}); err != nil {
-		panic(err)
+		log.Errorf("Error getting profile: %v", err)
 	}
 }
 

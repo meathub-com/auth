@@ -35,7 +35,7 @@ func (h *Handler) GetUser(w http.ResponseWriter, r *http.Request) {
 	}
 	w.WriteHeader(http.StatusOK)
 	if err := json.NewEncoder(w).Encode(user); err != nil {
-		panic(err)
+		log.Errorf("Error getting profile: %v", err)
 	}
 }
 
@@ -117,7 +117,7 @@ func (h *Handler) LoginUser(w http.ResponseWriter, r *http.Request) {
 	}
 	w.WriteHeader(http.StatusOK)
 	if err := json.NewEncoder(w).Encode(map[string]string{"token": token, "refreshToken": refreshToken}); err != nil {
-		panic(err)
+		log.Errorf("Error getting profile: %v", err)
 	}
 
 }
@@ -135,7 +135,7 @@ func (h *Handler) UpdateUser(w http.ResponseWriter, r *http.Request) {
 	}
 	w.WriteHeader(http.StatusOK)
 	if err := json.NewEncoder(w).Encode(user); err != nil {
-		panic(err)
+		log.Errorf("Error getting profile: %v", err)
 	}
 }
 

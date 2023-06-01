@@ -12,6 +12,8 @@ func (s *Service) GenerateToken(user User) (string, error) {
 	claims := token.Claims.(jwt.MapClaims)
 	claims["email"] = user.Email
 	claims["exp"] = time.Now().Add(time.Hour * 24).Unix()
+	claims["iat"] = time.Now().Unix()
+	claims["sub"] = user.ID
 
 	tokenString, err := token.SignedString([]byte("missionimpossible"))
 	if err != nil {
