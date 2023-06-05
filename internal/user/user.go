@@ -2,8 +2,13 @@ package user
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"golang.org/x/crypto/bcrypt"
+)
+
+var (
+	ErrorUserExists = errors.New("error creating user")
 )
 
 // User godoc
@@ -41,8 +46,17 @@ func (s *Service) GetUser(ctx context.Context, id string) (User, error) {
 func (s *Service) GetUserByEmail(ctx context.Context, email string) (User, error) {
 	return s.Store.GetUserByEmail(ctx, email)
 }
-func (s *Service) PostUser(ctx context.Context, user User) (User, error) {
-	return s.Store.PostUser(ctx, user)
+func (s *Service) PostUser(ctx context.Context, usr User) (User, error) {
+	u, err := s.Store.PostUser(ctx, usr)
+	if err != nil && errors.Is(err, ErrorUserExists) {
+		return User{}, ErrorUserExists
+	}
+	if err != nil {
+		wrappedErr := fmt.Errorf("error creating user: %w", err)
+		return User{}, wrappedErr
+	}
+
+	return u, nil
 }
 
 func (s *Service) UpdateUser(ctx context.Context, user User) (User, error) {
@@ -58,11 +72,12 @@ func (s *Service) ReadyCheck(ctx context.Context) error {
 }
 func (s *Service) Login(ctx context.Context, email string, password string) (User, error) {
 	user, salt, err := s.Store.GetUserAndSaltByEmail(ctx, email)
+
 	if err != nil {
 		return User{}, err
 	}
 	if !validatePassword(password, salt, user.Password) {
-		return User{}, fmt.Errorf("invalid password")
+		return User{}, fmt.Errorf("invalid password for user %s", email)
 	}
 	return user, nil
 }

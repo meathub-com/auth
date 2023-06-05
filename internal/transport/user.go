@@ -1,9 +1,11 @@
 package transport
 
 import (
+	"auth/internal/database"
 	"auth/internal/user"
 	"context"
 	"encoding/json"
+	"errors"
 	chi "github.com/go-chi/chi/v5"
 	log "github.com/sirupsen/logrus"
 	"net/http"
@@ -54,18 +56,31 @@ func (h *Handler) RegisterUser(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
-	user, err := h.Service.PostUser(r.Context(), convertRegisterRequestToUser(rr))
+	usr, err := h.Service.PostUser(r.Context(), convertRegisterRequestToUser(rr))
+	if err != nil && errors.Is(err, user.ErrorUserExists) {
+		log.WithError(err).Error("error creating user")
+		errMsg := "User already exists"
+		w.WriteHeader(http.StatusBadRequest)
+		w.Write([]byte(errMsg))
+		return
+	}
+	if err != nil && errors.Is(err, database.ErrorUserExists) {
+		log.WithError(err).Error("error creating user")
+		errMsg := "User already exists"
+		w.WriteHeader(http.StatusBadRequest)
+		w.Write([]byte(errMsg))
+		return
+	}
+
+	accessToken, err := h.Service.GenerateToken(usr)
 	if err != nil {
+		log.WithError(err).Error("error creating user")
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
-	accessToken, err := h.Service.GenerateToken(user)
+	refreshToken, err := h.Service.GenerateRefreshToken(usr)
 	if err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
-		return
-	}
-	refreshToken, err := h.Service.GenerateRefreshToken(user)
-	if err != nil {
+		log.WithError(err).Error("error creating user")
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
@@ -73,7 +88,7 @@ func (h *Handler) RegisterUser(w http.ResponseWriter, r *http.Request) {
 	if err := json.NewEncoder(w).Encode(LoginResponse{
 		AccessToken:  accessToken,
 		RefreshToken: refreshToken,
-		User:         user,
+		User:         usr,
 	}); err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 	}
@@ -96,20 +111,20 @@ func (h *Handler) LoginUser(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
-	user := convertLoginRequestToUser(lr)
-	user, err := h.Service.Login(r.Context(), user.Email, user.Password)
+	usr := convertLoginRequestToUser(lr)
+	usr, err := h.Service.Login(r.Context(), usr.Email, usr.Password)
 	if err != nil {
 		log.WithError(err).Error("error logging in user")
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
-	token, err := h.Service.GenerateToken(user)
+	token, err := h.Service.GenerateToken(usr)
 	if err != nil {
 		log.WithError(err).Error("error generating token")
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
-	refreshToken, err := h.Service.GenerateToken(user)
+	refreshToken, err := h.Service.GenerateToken(usr)
 	if err != nil {
 		log.WithError(err).Error("error generating refresh token")
 		w.WriteHeader(http.StatusInternalServerError)

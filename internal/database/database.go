@@ -3,12 +3,17 @@ package database
 import (
 	"auth/internal/user"
 	"context"
+	"errors"
 	"fmt"
 	"github.com/jmoiron/sqlx"
 	_ "github.com/lib/pq"
 	log "github.com/sirupsen/logrus"
 	"os"
 	"time"
+)
+
+var (
+	ErrorUserExists = errors.New("user already exists")
 )
 
 type Database struct {
@@ -47,44 +52,49 @@ func (d *Database) GetUserAndSaltByEmail(ctx context.Context, email string) (use
 	return user, userRow.Salt, nil
 }
 
-func (d *Database) PostUser(ctx context.Context, user user.User) (user.User, error) {
+func (d *Database) PostUser(ctx context.Context, u user.User) (user.User, error) {
+	userFound, err := d.GetUserByEmail(ctx, u.Email)
+
+	if userFound != (user.User{}) {
+		return u, ErrorUserExists
+	}
 	var userRow UserRow
 	salt, err := generateRandomSalt(saltLength)
 	if err != nil {
-		return user, err
+		return u, err
 	}
-	saltedPassword := user.Password + salt
+	saltedPassword := u.Password + salt
 	encryptedPassword, err := encryptPassword(saltedPassword)
 	if err != nil {
-		return user, err
+		return u, err
 	}
 
 	query := "INSERT INTO users (email, password, salt) VALUES ($1, $2, $3) RETURNING id, email, password"
-	err = d.Client.GetContext(ctx, &userRow, query, user.Email, encryptedPassword, salt)
+	err = d.Client.GetContext(ctx, &userRow, query, u.Email, encryptedPassword, salt)
 
-	user = convertUserRowToUser(userRow)
+	u = convertUserRowToUser(userRow)
 	if err != nil {
-		return user, err
+		return u, err
 	}
-	return user, nil
+	return u, nil
 }
 
-func (d *Database) UpdateUser(ctx context.Context, user user.User) (user.User, error) {
+func (d *Database) UpdateUser(ctx context.Context, usr user.User) (user.User, error) {
 	var userRow UserRow
 	query := "UPDATE users SET email = $1, password = $2 WHERE id = $3 RETURNING id, email, password"
-	err := d.Client.GetContext(ctx, &userRow, query, user.Email, user.Password, user.ID)
-	user = convertUserRowToUser(userRow)
+	err := d.Client.GetContext(ctx, &userRow, query, usr.Email, usr.Password, usr.ID)
+	usr = convertUserRowToUser(userRow)
 	if err != nil {
-		return user, err
+		return user.User{}, errors.New("could not update user")
 	}
-	return user, nil
+	return usr, nil
 }
 
 func (d *Database) DeleteUser(ctx context.Context, s string) error {
 	query := "DELETE FROM users WHERE id = $1"
 	_, err := d.Client.ExecContext(ctx, query, s)
 	if err != nil {
-		return err
+		return errors.New("could not delete user")
 	}
 	return nil
 }

@@ -19,8 +19,10 @@ import (
 )
 
 func Run() error {
+
 	var err error
 	store, err := database.NewDatabase()
+
 	if err != nil {
 		log.WithError(err).Error("could not create database")
 		return err
