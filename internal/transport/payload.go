@@ -4,8 +4,8 @@ import "auth/internal/user"
 
 type LoginResponse struct {
 	User         user.User `json:"user"`
-	AccessToken  string    `json:"access_token"`
-	RefreshToken string    `json:"refresh_token"`
+	AccessToken  string    `json:"authToken"`
+	RefreshToken string    `json:"refreshToken"`
 }
 type LoginRequest struct {
 	Email    string `json:"email"`
