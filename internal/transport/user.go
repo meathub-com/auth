@@ -114,8 +114,9 @@ func (h *Handler) LoginUser(w http.ResponseWriter, r *http.Request) {
 	usr := convertLoginRequestToUser(lr)
 	usr, err := h.Service.Login(r.Context(), usr.Email, usr.Password)
 	if err != nil {
-		log.WithError(err).Error("error logging in user")
-		w.WriteHeader(http.StatusInternalServerError)
+		log.WithError(err).Error("invalid login or password")
+		w.WriteHeader(http.StatusBadRequest)
+		w.Write([]byte("invalid login or password"))
 		return
 	}
 	token, err := h.Service.GenerateToken(usr)

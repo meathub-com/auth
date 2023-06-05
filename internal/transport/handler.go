@@ -56,6 +56,7 @@ func (h *Handler) mapRoutes() {
 	h.Router.Put("/auth/{id}", h.UpdateUser)
 	h.Router.Delete("/auth/{id}", h.DeleteUser)
 	h.Router.Post("/auth/login", h.LoginUser)
+	h.Router.Get("/auth/refresh/{refreshToken}", h.RefreshToken)
 	h.Router.Get("/swagger/*", httpSwagger.Handler(
 		httpSwagger.URL("http://localhost:8080/swagger/doc.json"),
 	))

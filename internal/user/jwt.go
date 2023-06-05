@@ -28,8 +28,10 @@ func (s *Service) GenerateRefreshToken(user User) (string, error) {
 
 	claims := token.Claims.(jwt.MapClaims)
 	claims["exp"] = time.Now().Add(time.Hour * 24 * 7).Unix()
+	claims["iat"] = time.Now().Unix()
+	claims["sub"] = user.ID
 
-	tokenString, err := token.SignedString([]byte("your-secret-key"))
+	tokenString, err := token.SignedString([]byte("missionimpossible"))
 	if err != nil {
 		return "", err
 	}
