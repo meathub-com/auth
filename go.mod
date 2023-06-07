@@ -8,7 +8,6 @@ require (
 	github.com/golang-jwt/jwt/v4 v4.5.0
 	github.com/golang-migrate/migrate/v4 v4.15.2
 	github.com/jmoiron/sqlx v1.3.5
-	github.com/joho/godotenv v1.3.0
 	github.com/lib/pq v1.10.9
 	github.com/sirupsen/logrus v1.9.2
 	github.com/swaggo/http-swagger v1.3.4

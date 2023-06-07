@@ -119,7 +119,7 @@ func (h *Handler) LoginUser(w http.ResponseWriter, r *http.Request) {
 		w.Write([]byte("invalid login or password"))
 		return
 	}
-	token, err := h.Service.GenerateToken(usr)
+	accessToken, err := h.Service.GenerateToken(usr)
 	if err != nil {
 		log.WithError(err).Error("error generating token")
 		w.WriteHeader(http.StatusInternalServerError)
@@ -132,8 +132,12 @@ func (h *Handler) LoginUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	w.WriteHeader(http.StatusOK)
-	if err := json.NewEncoder(w).Encode(map[string]string{"token": token, "refreshToken": refreshToken}); err != nil {
-		log.Errorf("Error getting profile: %v", err)
+	if err := json.NewEncoder(w).Encode(LoginResponse{
+		AccessToken:  accessToken,
+		RefreshToken: refreshToken,
+		User:         usr,
+	}); err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
 	}
 
 }
