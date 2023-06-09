@@ -16,6 +16,6 @@ run-docker:
 build-docker:
 	docker-compose up --build
 
-build-and-push:
+bp:
 	docker build -t jromankiew/auth .
 	docker push jromankiew/auth

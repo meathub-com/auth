@@ -51,6 +51,7 @@ func NewHandler(service UserService) *Handler {
 }
 
 func (h *Handler) mapRoutes() {
+	h.Router.Get("/auth", h.AliveCheck)
 	h.Router.Get("/auth/{id}", h.GetUser)
 	h.Router.Post("/auth/register", h.RegisterUser)
 	h.Router.Put("/auth/{id}", h.UpdateUser)
