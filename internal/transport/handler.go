@@ -1,9 +1,10 @@
 package transport
 
 import (
+	_ "auth/docs"
 	"context"
 	"encoding/json"
-	"github.com/go-chi/chi/v5"
+	chi "github.com/go-chi/chi/v5"
 	"github.com/go-chi/cors"
 	log "github.com/sirupsen/logrus"
 	httpSwagger "github.com/swaggo/http-swagger"
@@ -51,6 +52,7 @@ func NewHandler(service UserService) *Handler {
 }
 
 func (h *Handler) mapRoutes() {
+
 	h.Router.Get("/auth", h.AliveCheck)
 	h.Router.Get("/auth/{id}", h.GetUser)
 	h.Router.Post("/auth/register", h.RegisterUser)
@@ -58,6 +60,7 @@ func (h *Handler) mapRoutes() {
 	h.Router.Delete("/auth/{id}", h.DeleteUser)
 	h.Router.Post("/auth/login", h.LoginUser)
 	h.Router.Get("/auth/refresh/{refreshToken}", h.RefreshToken)
+	h.Router.Get("/swagger.json", h.ServeSwagger) // added this line
 	h.Router.Get("/swagger/*", httpSwagger.Handler(
 		httpSwagger.URL("http://localhost:8080/swagger/doc.json"),
 	))
@@ -81,6 +84,9 @@ func (h *Handler) ReadyCheck(w http.ResponseWriter, r *http.Request) {
 	if err := json.NewEncoder(w).Encode(Response{Message: "I am Ready!"}); err != nil {
 		log.Errorf("Error getting profile: %v", err)
 	}
+}
+func (h *Handler) ServeSwagger(w http.ResponseWriter, r *http.Request) {
+	http.ServeFile(w, r, "./docs/swagger.json")
 }
 
 // Serve - gracefully serves our newly set up handler function

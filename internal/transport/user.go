@@ -48,7 +48,7 @@ func (h *Handler) GetUser(w http.ResponseWriter, r *http.Request) {
 // @Accept  json
 // @Produce  json
 // @Param user body RegisterRequest true "User info"
-// @Success 200 {object} LoginResponse
+// @Success 200 {object} RegisterResponse
 // @Router /auth/register [post]
 func (h *Handler) RegisterUser(w http.ResponseWriter, r *http.Request) {
 	var rr RegisterRequest
@@ -85,7 +85,7 @@ func (h *Handler) RegisterUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	w.WriteHeader(http.StatusOK)
-	if err := json.NewEncoder(w).Encode(LoginResponse{
+	if err := json.NewEncoder(w).Encode(RegisterResponse{
 		AccessToken:  accessToken,
 		RefreshToken: refreshToken,
 		User:         usr,

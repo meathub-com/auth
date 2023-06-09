@@ -79,7 +79,7 @@
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/transport.LoginResponse"
+                            "$ref": "#/definitions/transport.RegisterResponse"
                         }
                     }
                 }
@@ -90,10 +90,10 @@
         "transport.LoginResponse": {
             "type": "object",
             "properties": {
-                "access_token": {
+                "authToken": {
                     "type": "string"
                 },
-                "refresh_token": {
+                "refreshToken": {
                     "type": "string"
                 },
                 "user": {
@@ -109,6 +109,20 @@
                 },
                 "password": {
                     "type": "string"
+                }
+            }
+        },
+        "transport.RegisterResponse": {
+            "type": "object",
+            "properties": {
+                "authToken": {
+                    "type": "string"
+                },
+                "refreshToken": {
+                    "type": "string"
+                },
+                "user": {
+                    "$ref": "#/definitions/user.User"
                 }
             }
         },

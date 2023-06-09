@@ -2,6 +2,12 @@ package transport
 
 import "auth/internal/user"
 
+type RegisterResponse struct {
+	AccessToken  string    `json:"authToken"`
+	RefreshToken string    `json:"refreshToken"`
+	User         user.User `json:"user"`
+}
+
 type LoginResponse struct {
 	User         user.User `json:"user"`
 	AccessToken  string    `json:"authToken"`
