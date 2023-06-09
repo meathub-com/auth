@@ -52,7 +52,6 @@ func NewHandler(service UserService) *Handler {
 }
 
 func (h *Handler) mapRoutes() {
-
 	h.Router.Get("/auth", h.AliveCheck)
 	h.Router.Get("/auth/{id}", h.GetUser)
 	h.Router.Post("/auth/register", h.RegisterUser)
@@ -62,8 +61,7 @@ func (h *Handler) mapRoutes() {
 	h.Router.Get("/auth/refresh/{refreshToken}", h.RefreshToken)
 	h.Router.Get("/swagger.json", h.ServeSwagger) // added this line
 	h.Router.Get("/swagger/*", httpSwagger.Handler(
-		httpSwagger.URL("http://localhost:8080/swagger/doc.json"),
-	))
+		httpSwagger.URL("http://localhost:8080/swagger/doc.json")))
 }
 
 func (h *Handler) AliveCheck(w http.ResponseWriter, r *http.Request) {
