@@ -23,11 +23,15 @@ type UserService interface {
 	GenerateRefreshToken(user user.User) (string, error)
 }
 
-// GetUser @Summary Get a user
-// @Description get string by ID
-// @ID get-string-by-int
+// GetUser godoc
+// @Summary Get a user's information
+// @Description Get a user's details based on their ID
+// @Tags users
 // @Accept  json
 // @Produce  json
+// @Param id path string true "User ID"
+// @Success 200 {object} user.User
+// @Router /users/{id} [get]
 func (h *Handler) GetUser(w http.ResponseWriter, r *http.Request) {
 	user, err := h.Service.GetUser(r.Context(), chi.URLParam(r, "id"))
 	if err != nil {

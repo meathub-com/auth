@@ -70,6 +70,27 @@ paths:
       summary: Log in a user
       tags:
       - users
+  /auth/refresh/{refreshToken}:
+    get:
+      consumes:
+      - application/json
+      description: Get refresh token for user
+      parameters:
+      - description: Refresh token
+        in: path
+        name: refreshToken
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: string
+      summary: Get refresh token for user
+      tags:
+      - auth
   /auth/register:
     post:
       consumes:
@@ -90,6 +111,27 @@ paths:
           schema:
             $ref: '#/definitions/transport.RegisterResponse'
       summary: Register a new user
+      tags:
+      - users
+  /users/{id}:
+    get:
+      consumes:
+      - application/json
+      description: Get a user's details based on their ID
+      parameters:
+      - description: User ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/user.User'
+      summary: Get a user's information
       tags:
       - users
 swagger: "2.0"

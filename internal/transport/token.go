@@ -9,6 +9,15 @@ import (
 	"net/http"
 )
 
+// RefreshToken godoc
+// @Summary Get refresh token for user
+// @Description Get refresh token for user
+// @Tags users
+// @Accept  json
+// @Produce  json
+// @Param refreshToken path string true "Refresh token"
+// @Success 200 {object} string
+// @Router /auth/refresh/{refreshToken} [get]
 func (h *Handler) RefreshToken(w http.ResponseWriter, r *http.Request) {
 	refreshToken := chi.URLParam(r, "refreshToken")
 	token, err := validateToken(refreshToken)
