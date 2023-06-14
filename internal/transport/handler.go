@@ -7,7 +7,6 @@ import (
 	chi "github.com/go-chi/chi/v5"
 	"github.com/go-chi/cors"
 	log "github.com/sirupsen/logrus"
-	httpSwagger "github.com/swaggo/http-swagger"
 	"net/http"
 	"os"
 	"os/signal"
@@ -60,8 +59,8 @@ func (h *Handler) mapRoutes() {
 	h.Router.Post("/auth/login", h.LoginUser)
 	h.Router.Get("/auth/refresh/{refreshToken}", h.RefreshToken)
 	h.Router.Get("/swagger.json", h.ServeSwagger) // added this line
-	h.Router.Get("/swagger/*", httpSwagger.Handler(
-		httpSwagger.URL("http://localhost:8080/swagger/doc.json")))
+	/*h.Router.Get("/swagger/*", httpSwagger.Handler(
+	httpSwagger.URL("http://localhost:8080/swagger/doc.json")))*/
 }
 
 func (h *Handler) AliveCheck(w http.ResponseWriter, r *http.Request) {
