@@ -104,7 +104,7 @@ func (d *Database) Ping(ctx context.Context) error {
 	panic("implement me")
 }
 
-const maxRetries = 5
+const maxRetries = 10
 const retryInterval = time.Second * 5
 
 func NewDatabase() (*Database, error) {
